@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duygu Destek Platformu</title>
+    <style>
+        :root {
+            --primary-bg: #f4f7f6;
+            --text-color: #333;
+            --accent-color: #007bff;
+            --light-accent: #e7f3ff;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+
+            /* Duygu Renkleri */
+            --kaygili-bg: linear-gradient(135deg, #6c757d, #495057);
+            --kaygili-text: #f8f9fa;
+            --yalniz-bg: linear-gradient(135deg, #a2d2ff, #61a5c2);
+            --yalniz-text: #0b132b;
+            --umutsuz-bg: linear-gradient(135deg, #adb5bd, #6c757d);
+            --umutsuz-text: #e9ecef;
+            --boslukta-bg: linear-gradient(135deg, #e9ecef, #ced4da);
+            --boslukta-text: #495057;
+            --kararsiz-bg: linear-gradient(135deg, #c77dff, #9d4edd);
+            --kararsiz-text: #f8f9fa;
+            --sakin-bg: linear-gradient(135deg, #a9def9, #72efdd);
+            --sakin-text: #003049;
+            --ilhamli-bg: linear-gradient(135deg, #ffd6a5, #ffb38a);
+            --ilhamli-text: #5c3c10;
+            --sevgisiz-bg: linear-gradient(135deg, #ffb3c1, #ff8fab);
+            --sevgisiz-text: #590d22;
+            --pastel-sari: #fff1a6;
+            --soguk-mavi: #add8e6;
+        }
+
+        body.dark-mode {
+            --primary-bg: #222831;
+            --text-color: #eeeeee;
+            --card-bg: #393e46;
+            --border-color: #4a4e58;
+            --light-accent: #3a4e67;
+            --accent-color: #00adb5;
+
+             /* Duygu Renkleri - Karanlık Mod */
+            --kaygili-bg: linear-gradient(135deg, #495057, #343a40);
+            --yalniz-bg: linear-gradient(135deg, #61a5c2, #3c7a89);
+            --umutsuz-bg: linear-gradient(135deg, #6c757d, #495057);
+            --boslukta-bg: linear-gradient(135deg, #ced4da, #adb5bd); /* Text rengi açık kalmalı */
+            --boslukta-text: #212529;
+            --kararsiz-bg: linear-gradient(135deg, #9d4edd, #7b2cbf);
+            --sakin-bg: linear-gradient(135deg, #72efdd, #56cfe1);
+            --ilhamli-bg: linear-gradient(135deg, #ffb38a, #ff8c61);
+            --sevgisiz-bg: linear-gradient(135deg, #ff8fab, #ff758f);
+            --pastel-sari: #b3a370;
+            --soguk-mavi: #5c7a89;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 1001; /* Navigasyonun üzerinde olması için */
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            background-color: var(--light-accent);
+            padding: 10px;
+            border-radius: var(--border-radius);
+        }
+
+        nav button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+        }
+
+        nav button:hover, nav button.active {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        body.dark-mode nav button:hover, body.dark-mode nav button.active {
+            background-color: #007c82;
+        }
+
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--primary-bg); /* İçeriğin kendi arkaplanı */
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2, h3 {
+            color: var(--accent-color);
+        }
+
+        /* SEKME 1: Duygu Butonları */
+        .duygu-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .duygu-button {
+            padding: 20px 10px;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+        }
+
+        .duygu-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        #duygu-kaygili { background: var(--kaygili-bg); color: var(--kaygili-text); }
+        #duygu-yalniz { background: var(--yalniz-bg); color: var(--yalniz-text); }
+        #duygu-umutsuz { background: var(--umutsuz-bg); color: var(--umutsuz-text); }
+        #duygu-boslukta { background: var(--boslukta-bg); color: var(--boslukta-text); }
+        #duygu-kararsiz { background: var(--kararsiz-bg); color: var(--kararsiz-text); }
+        #duygu-sakin { background: var(--sakin-bg); color: var(--sakin-text); }
+        #duygu-ilhamli { background: var(--ilhamli-bg); color: var(--ilhamli-text); }
+        #duygu-sevgisiz { background: var(--sevgisiz-bg); color: var(--sevgisiz-text); }
+
+        #duygu-icerik {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-accent);
+            border-radius: var(--border-radius);
+            min-height: 150px;
+        }
+        #duygu-icerik h3 { margin-top: 0; }
+        #duygu-icerik ul { list-style: none; padding-left: 0; }
+        #duygu-icerik li { margin-bottom: 8px; }
+        #duygu-destek-oneri { color: red; font-weight: bold; margin-top:15px; }
+
+
+        /* SEKME 2: Empati Kartları */
+        .empati-kartlari-container { text-align: center; }
+        .empati-kart {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 15px auto;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            text-align: left;
+        }
+        .empati-kart p { font-style: italic; margin-bottom: 15px;}
+        .kart-tepkiler button {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .kart-tepkiler button:hover { background-color: var(--light-accent); }
+        #yeni-kart-form textarea {
+            width: calc(100% - 22px); /* Padding ve border hesabı */
+            min-height: 80px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+        #yeni-kart-form input[type="text"] {
+            width: calc(50% - 22px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+         #yeni-kart-form button, .empati-kartlari-container button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+        #yeni-kart-form button:hover, .empati-kartlari-container button:hover {
+            background-color: #0056b3;
+        }
+        body.dark-mode #yeni-kart-form button:hover, body.dark-mode .empati-kartlari-container button:hover {
+            background-color: #007c82;
+        }
+
+        /* SEKME 3: İyileşme Alanı */
+        .iyilesme-bolumu {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: var(--light-accent);
+            border-radius: var(--border-radius);
+        }
+        .iyilesme-bolumu h3 { margin-top: 0; }
+        .iyilesme-bolumu button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+         .iyilesme-bolumu button:hover { background-color: #0056b3; }
+         body.dark-mode .iyilesme-bolumu button:hover { background-color: #007c82; }
+
+        .emoji-skala button {
+            font-size: 1.5em;
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        #geri-bildirim-notu {
+            width: calc(100% - 22px);
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+
+        /* SEKME 4: Duygusal Görevler */
+        .gorev {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: var(--light-accent);
+            border-radius: 8px;
+        }
+        .gorev input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); }
+        .gorev label { flex-grow: 1; }
+        .rozetler-alani span {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+
+
+        /* SEKME 5: Dijital Terapi Defteri */
+        #gunluk-soru { font-style: italic; margin-bottom: 15px; color: var(--accent-color); }
+        #terapi-defteri-form textarea {
+            width: calc(100% - 22px);
+            min-height: 150px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+        #terapi-defteri-form .mod-butonlari button {
+            margin-right: 10px;
+        }
+        #terapi-defteri-form button {
+             background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #terapi-defteri-form button:hover { background-color: #0056b3; }
+        body.dark-mode #terapi-defteri-form button:hover { background-color: #007c82; }
+        #kelime-analizi { margin-top: 15px; font-size: 0.9em; }
+
+
+        /* SEKME 6: Ruh Halin Ne Renk? */
+        .ruh-hali-secim select, .ruh-hali-secim button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+        #ruh-portresi {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: background-color 0.5s, border-style 0.5s;
+            position: relative;
+            overflow: hidden; /* For animations */
+        }
+        #ruh-portresi-text {
+            color: white; /* Default, can be overridden by JS */
+            mix-blend-mode: difference; /* Makes text visible on most backgrounds */
+            z-index: 1;
+        }
+
+        /* Doku ve Hareket için örnek stiller (JS ile class olarak eklenecek) */
+        .doku-dalgalı { background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px); }
+        .doku-kirik::before { content: ""; position: absolute; top:0;left:0;right:0;bottom:0; background-image: repeating-linear-gradient(135deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px), repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px); opacity: 0.5;}
+        .doku-duz {}
+        .doku-bulanik { filter: blur(1px); } /* Basit bulanıklık, portrenin kendisine uygulanır */
+
+        .hareket-titresimli { animation: titresim 0.3s infinite alternate; }
+        @keyframes titresim { from { transform: translateX(-1px) translateY(-1px); } to { transform: translateX(1px) translateY(1px); } }
+
+        .hareket-yavas-donen { animation: yavasDonus 10s linear infinite; }
+        @keyframes yavasDonus { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .hareket-yukari-tirmanan::after { content: "▲"; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); animation: tirman 3s ease-in-out infinite; opacity:0.5; font-size: 1.5em;}
+        @keyframes tirman { 0% { bottom: 5px; opacity: 0.2;} 50% { bottom: 80%; opacity: 0.8;} 100% { bottom: 5px; opacity: 0.2;} }
+
+
+        /* Rozetler */
+        .rozet {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            background-color: gold;
+            color: #333;
+            border-radius: 15px;
+            font-size: 0.9em;
+            border: 1px solid orange;
+        }
+
+        /* Genel Butonlar */
+        button.primary-action {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+            transition: background-color var(--transition-speed);
+        }
+        button.primary-action:hover {
+             background-color: #0056b3;
+        }
+        body.dark-mode button.primary-action:hover {
+            background-color: #007c82;
+        }
+
+        /* Paylaşım */
+        .paylasim-butonu {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+    </style>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+
+    <div class="container">
+        <header>
+            <h1>Duygu Dünyana Hoş Geldin</h1>
+            <p>Bugün nasıl hissediyorsun? İçindeki sesi dinle.</p>
+        </header>
+
+        <nav id="tab-navigation">
+            <button data-tab="duygu-butonlari" class="active">Duygu Butonları</button>
+            <button data-tab="empati-kartlari">Empati Kartları</button>
+            <button data-tab="iyilesme-alani">İyileşme Alanı</button>
+            <button data-tab="duygusal-gorevler">Duygusal Görevler</button>
+            <button data-tab="terapi-defteri">Dijital Terapi Defteri</button>
+            <button data-tab="ruh-hali-renk">Ruh Halin Ne Renk?</button>
+        </nav>
+
+        <div id="duygu-butonlari-content" class="tab-content active">
+            <h2>SEKME 1: Duygu Butonları – “Bugün Neyin İçindesin?”</h2>
+            <p>Ana duygunu seçerek sana özel içeriklere ulaş.</p>
+            <div class="duygu-buttons">
+                <button class="duygu-button" id="duygu-kaygili" data-emotion="Kaygılı">Kaygılı</button>
+                <button class="duygu-button" id="duygu-yalniz" data-emotion="Yalnız">Yalnız</button>
+                <button class="duygu-button" id="duygu-umutsuz" data-emotion="Umutsuz">Umutsuz</button>
+                <button class="duygu-button" id="duygu-boslukta" data-emotion="Boşlukta">Boşlukta</button>
+                <button class="duygu-button" id="duygu-kararsiz" data-emotion="Kararsız">Kararsız</button>
+                <button class="duygu-button" id="duygu-sakin" data-emotion="Sakin">Sakin</button>
+                <button class="duygu-button" id="duygu-ilhamli" data-emotion="İlhamlı">İlhamlı</button>
+                <button class="duygu-button" id="duygu-sevgisiz" data-emotion="Sevgisiz">Sevgisiz</button>
+            </div>
+            <div id="duygu-icerik">
+                <p>Lütfen bir duygu seçin.</p>
+            </div>
+             <div id="duygu-destek-oneri"></div>
+        </div>
+
+        <div id="empati-kartlari-content" class="tab-content">
+            <h2>SEKME 2: Empati Kartları – “Beni Anlayan Birileri Var”</h2>
+            <div class="empati-kartlari-container">
+                <button id="kartCekButton" class="primary-action">3 Rastgele Kart Çek</button>
+                <div id="empati-kartlari-alani">
+                    </div>
+                <hr style="margin: 20px 0;">
+                <h3>Kendi Kartını Bırak</h3>
+                <form id="yeni-kart-form">
+                    <textarea id="yeni-kart-metni" placeholder="Kısa duygusal ifadenizi yazın..." required></textarea><br>
+                    <input type="text" id="yeni-kart-takma-ad" placeholder="Takma Ad (isteğe bağlı)">
+                    <label><input type="checkbox" id="yeni-kart-anonim"> Anonim Olarak Bırak</label><br>
+                    <button type="submit">Kartımı Bırak</button>
+                </form>
+                <div class="rozetler-alani" id="empati-rozetleri"></div>
+                 <button class="paylasim-butonu" onclick="paylasEkranGoruntusu('empati-kartlari-alani', 'Bugün bana en dokunan kart:')">Bu Kartları Paylaş</button>
+            </div>
+        </div>
+
+        <div id="iyilesme-alani-content" class="tab-content">
+            <h2>SEKME 3: İyileşme Alanı – “Bedenin ve Zihnin Dinlensin”</h2>
+            <div id="iyilesme-onerileri">
+                 </div>
+            <div class="iyilesme-bolumu">
+                <h3>“3 Dakikada Toparlan” Serisi</h3>
+                <p>Gözlerini kapat, derin bir nefes al ve rahatla.</p>
+                <button onclick="baslatEgzersiz('Toparlanma', 'Odaklanma müziği çalıyor...', 'Derin nefes al... ver... al... ver...')">Başla</button>
+            </div>
+            <div class="iyilesme-bolumu">
+                <h3>Duygulara Göre Meditasyonlar</h3>
+                <p id="meditasyon-onerisi">Seçili duygunuza göre bir meditasyon önerisi için Duygu Butonları sekmesinden bir duygu seçin.</p>
+                <button onclick="baslatEgzersiz('Anksiyete Sakinleştirme Meditasyonu', 'Sakinleştirici müzik ve yönlendirme...', 'Nefesine odaklan, düşünceler aksın...')">Anksiyete Sakinleştirme</button>
+                <button onclick="baslatEgzersiz('Motivasyon Meditasyonu', 'Enerji veren müzik ve yönlendirme...', 'İçindeki gücü hisset...')">Düşük Enerjide Motivasyon</button>
+            </div>
+            <div class="iyilesme-bolumu">
+                <h3>Soft Binaural Sesler</h3>
+                <button onclick="baslatEgzersiz('Yağmur Sesi', 'Yağmur sesi çalıyor...', 'Rahatla ve dinlen.')">Yağmur Sesi</button>
+                <button onclick="baslatEgzersiz('Deniz Dalgası', 'Deniz dalgası sesi çalıyor...', 'Huzuru hisset.')">Deniz Dalgası</button>
+                <button onclick="baslatEgzersiz('Kamp Ateşi', 'Kamp ateşi sesi çalıyor...', 'Sıcaklığı duyumsat.')">Kamp Ateşi</button>
+            </div>
+            <div id="egzersiz-sonrasi-geri-bildirim" style="display:none;">
+                <h4>Egzersiz Tamamlandı! Nasıl hissettin?</h4>
+                <div class="emoji-skala">
+                    <button>😞</button> <button>😕</button> <button>😐</button> <button>🙂</button> <button>😊</button>
+                </div>
+                <textarea id="geri-bildirim-notu" placeholder="İstersen bir not bırakabilirsin..."></textarea>
+                <button class="primary-action" onclick="geriBildirimGonder()">Gönder</button>
+            </div>
+        </div>
+
+        <div id="duygusal-gorevler-content" class="tab-content">
+            <h2>SEKME 4: Duygusal Görevler – “İçten İyileşme Rutinleri”</h2>
+            <div id="gorevler-listesi">
+                <div class="gorev">
+                    <input type="checkbox" id="gorev1" data-gorev="olumlama">
+                    <label for="gorev1">Bugün 5 olumlama cümlesi yaz.</label>
+                </div>
+                <div class="gorev">
+                    <input type="checkbox" id="gorev2" data-gorev="yeni-sey-dene">
+                    <label for="gorev2">"Yeni bir şey dene" görevi (Eğer 3 gündür aynı duyguyu seçiyorsan aktif olur).</label>
+                </div>
+                <div class="gorev">
+                    <input type="checkbox" id="gorev3" data-gorev="mesaj-gonder">
+                    <label for="gorev3">Birine içten bir mesaj gönder.</label>
+                </div>
+                 <div class="gorev">
+                    <input type="checkbox" id="gorev4" data-gorev="meditasyon">
+                    <label for="gorev4">Bugün 5 dakika meditasyon yap.</label>
+                </div>
+            </div>
+            <h3>Kazanılan Rozetler:</h3>
+            <div class="rozetler-alani" id="gorev-rozetleri">
+                </div>
+        </div>
+
+        <div id="terapi-defteri-content" class="tab-content">
+            <h2>SEKME 5: Dijital Terapi Defteri – “Kendini Duy, Kendine Yaz”</h2>
+            <p id="gunluk-soru">Yönlendirici soru buraya gelecek.</p>
+            <form id="terapi-defteri-form">
+                <textarea id="gunluk-yazisi" placeholder="Bugün içinden geçenleri özgürce yaz..."></textarea>
+                <div class="mod-butonlari">
+                    <button type="button" onclick="alert('Görsel moodboard modu yakında!')">🖼️ Görsel Moodboard</button>
+                    <button type="button" onclick="alert('Sesli ifade kaydı modu yakında!')">🎤 Sesli İfade Kaydı</button>
+                </div>
+                <button type="submit" class="primary-action">Günlüğe Kaydet</button>
+                <button type="button" id="empatiyeGonderButton">Anonim Olarak Empati Kartı Havuzuna Gönder</button>
+            </form>
+            <div id="kayitli-gunlukler">
+                <h4>Önceki Kayıtlar (Örnek):</h4>
+                </div>
+            <div id="kelime-analizi">
+                </div>
+        </div>
+
+        <div id="ruh-hali-renk-content" class="tab-content">
+            <h2>SEKME 6: Ruh Halin Ne Renk? – “İçindeki Duyguya Renk Ver”</h2>
+            <div class="ruh-hali-secim">
+                <label for="ruh-renk">Renk Seç:</label>
+                <select id="ruh-renk">
+                    <option value="#2f4f4f" data-text-color="white">Koyu Gri (Belirsizlik)</option>
+                    <option value="#4682b4" data-text-color="white">Çelik Mavisi (Yalnızlık)</option>
+                    <option value="#dda0dd" data-text-color="black">Lila (Kararsızlık)</option>
+                    <option value="#ff7f50" data-text-color="black">Mercan (Umut)</option>
+                    <option value="#f0e68c" data-text-color="black">Haki (Durgunluk)</option>
+                    <option value="#90ee90" data-text-color="black">Açık Yeşil (Huzur)</option>
+                    <option value="#ffd700" data-text-color="black">Altın (Neşe)</option>
+                </select>
+
+                <label for="ruh-doku">Doku Seç:</label>
+                <select id="ruh-doku">
+                    <option value="doku-duz">Düz</option>
+                    <option value="doku-dalgalı">Dalgalı</option>
+                    <option value="doku-kirik">Kırık</option>
+                    <option value="doku-bulanik">Bulanık</option>
+                </select>
+
+                <label for="ruh-hareket">Hareket Tipi Seç:</label>
+                <select id="ruh-hareket">
+                    <option value="">Hareketsiz</option>
+                    <option value="hareket-titresimli">Titreşimli</option>
+                    <option value="hareket-yavas-donen">Yavaş Dönen</option>
+                    <option value="hareket-yukari-tirmanan">Yukarı Tırmanan</option>
+                </select>
+            </div>
+
+            <div id="ruh-portresi">
+                <span id="ruh-portresi-text">Ruh Portren</span>
+            </div>
+            <p id="ruh-portresi-aciklama" style="text-align:center;">“Bugün içim bu renkteydi...”</p>
+            <button class="paylasim-butonu primary-action" style="display:block; margin: 10px auto;" onclick="paylasRuhPortresi()">Ruh Portremi Paylaş</button>
+        </div>
+    </div>
+
+    <script>
+        // Genel Değişkenler
+        const tabs = document.querySelectorAll('#tab-navigation button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const body = document.body;
+        const themeToggleButton = document.getElementById('themeToggle');
+
+        // Tema Değiştirici
+        themeToggleButton.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            themeToggleButton.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            // Ruh portresi rengini de güncellemek gerekebilir eğer açıksa
+            if (document.getElementById('ruh-hali-renk-content').classList.contains('active')) {
+                 updateRuhPortresi();
+            }
+        });
+
+        // Sekme Navigasyonu
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(item => item.classList.remove('active'));
+                tab.classList.add('active');
+
+                const target = tab.getAttribute('data-tab');
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === target + '-content') {
+                        content.classList.add('active');
+                    }
+                });
+                // Sekme değiştiğinde body arkaplanını sıfırla (isteğe bağlı)
+                // body.style.background = ''; 
+                // body.style.color = '';
+            });
+        });
+
+        // ------ SEKME 1: Duygu Butonları ------
+        const duyguButtons = document.querySelectorAll('.duygu-button');
+        const duyguIcerikDiv = document.getElementById('duygu-icerik');
+        const duyguDestekOneriDiv = document.getElementById('duygu-destek-oneri');
+        let secilenDuygu = null;
+        let duyguSayaclari = {}; // { 'Kaygılı': 1, 'Yalnız': 0 ...}
+        const duyguRenkMap = {
+            'Kaygılı': { bg: 'var(--kaygili-bg)', text: 'var(--kaygili-text)', portalBg: 'var(--soguk-mavi)' },
+            'Yalnız': { bg: 'var(--yalniz-bg)', text: 'var(--yalniz-text)', portalBg: 'var(--soguk-mavi)' },
+            'Umutsuz': { bg: 'var(--umutsuz-bg)', text: 'var(--umutsuz-text)', portalBg: 'var(--soguk-mavi)' },
+            'Boşlukta': { bg: 'var(--boslukta-bg)', text: 'var(--boslukta-text)', portalBg: '#E0E0E0' },
+            'Kararsız': { bg: 'var(--kararsiz-bg)', text: 'var(--kararsiz-text)', portalBg: '#D8BFD8' },
+            'Sakin': { bg: 'var(--sakin-bg)', text: 'var(--sakin-text)', portalBg: 'var(--pastel-sari)' },
+            'İlhamlı': { bg: 'var(--ilhamli-bg)', text: 'var(--ilhamli-text)', portalBg: 'var(--pastel-sari)' },
+            'Sevgisiz': { bg: 'var(--sevgisiz-bg)', text: 'var(--sevgisiz-text)', portalBg: '#FFC0CB' }
+        };
+
+        duyguButtons.forEach(button => {
+            const emotion = button.dataset.emotion;
+            duyguSayaclari[emotion] = 0; // Başlangıç sayaçları
+
+            button.addEventListener('click', () => {
+                secilenDuygu = emotion;
+                duyguSayaclari[emotion]++;
+
+                // Arka planı değiştir (body için)
+                // body.style.background = duyguRenkMap[emotion].portalBg; // Yavaş geçiş için CSS'e transition eklenebilir
+                // body.style.transition = 'background-color 0.8s ease'; // CSS'de body'ye ekle
+
+                // İlgili içerikleri göster
+                duyguIcerikDiv.innerHTML = `
+                    <h3>${emotion} Hissine Özel</h3>
+                    <p><strong>Anonim Hikayeler (Örnek):</strong></p>
+                    <ul>
+                        <li>"Bugün ${emotion} hissettim çünkü..." (Gerçek hikayeler buraya gelecek)</li>
+                        <li>"Bu hisle başa çıkmak için şunu denedim..."</li>
+                    </ul>
+                    <p><strong>Podcast / Müzik Önerisi:</strong></p>
+                    <ul>
+                        <li>Öneri: '${emotion} ruh haline uygun bir parça/podcast' (Gerçek öneriler buraya)</li>
+                    </ul>
+                    <p><strong>Mini Yönlendirme:</strong></p>
+                    <p>Şu an 3 şey söyle: Seni ne ${emotion === 'Kaygılı' ? 'korkutuyor' : emotion === 'İlhamlı' ? 'heyecanlandırıyor' : 'etkiliyor'}?</p>
+                `;
+                
+                // Yapay zeka destekli öneri simülasyonu
+                if (duyguSayaclari[emotion] >= 3) {
+                    duyguDestekOneriDiv.textContent = `"${emotion}" hissin uzun sürdü. İstersen bir destek alanına (örneğin profesyonel yardım veya güvendiğin biriyle konuşmak) göz atabilirsin.`;
+                } else {
+                    duyguDestekOneriDiv.textContent = '';
+                }
+
+                // Sekme 3'teki meditasyon önerisini güncelle
+                updateMeditasyonOnerisi(emotion);
+                // Sekme 4'teki görevleri güncelle
+                checkDuyguGorevi();
+            });
+        });
+
+        // ------ SEKME 2: Empati Kartları ------
+        let empatiKartlari = [
+            { text: "İnsanlar beni eğlenceli buluyor ama her gün ağlayarak uyuyorum.", user: "Gizli Bahçe", anonymous: true, reactions: { anliyorum: 0, ayni: 0, hatirla: 0 } },
+            { text: "Bazen kimse beni anlamıyor gibi hissediyorum, bu çok yorucu.", user: "Sessiz Fırtına", anonymous: true, reactions: { anliyorum: 0, ayni: 0, hatirla: 0 } },
+            { text: "Küçük bir başarı bile olsa, bugün kendimle gurur duydum.", user: "Umut Işığı", anonymous: false, reactions: { anliyorum: 0, ayni: 0, hatirla: 0 } }
+        ];
+        let okunanKartSayisi = 0;
+        const kartCekButton = document.getElementById('kartCekButton');
+        const empatiKartlariAlani = document.getElementById('empati-kartlari-alani');
+        const yeniKartForm = document.getElementById('yeni-kart-form');
+
+        function renderEmpatiKartlari(kartlarToRender) {
+            empatiKartlariAlani.innerHTML = '';
+            kartlarToRender.forEach((kart, index) => {
+                const kartDiv = document.createElement('div');
+                kartDiv.classList.add('empati-kart');
+                kartDiv.innerHTML = `
+                    <p>"${kart.text}"</p>
+                    <small>Yazan: ${kart.anonymous ? 'Anonim' : kart.user}</small>
+                    <div class="kart-tepkiler" data-index="${empatiKartlari.indexOf(kart)}">
+                        <button data-reaction="anliyorum">🤍 Anlıyorum (${kart.reactions.anliyorum})</button>
+                        <button data-reaction="ayni">💬 Aynı durumdayım (${kart.reactions.ayni})</button>
+                        <button data-reaction="hatirla">📌 Hatırla (${kart.reactions.hatirla})</button>
+                    </div>
+                `;
+                empatiKartlariAlani.appendChild(kartDiv);
+            });
+             // Event listener'ları yeniden ata
+            document.querySelectorAll('.kart-tepkiler button').forEach(button => {
+                button.addEventListener('click', handleKartTepki);
+            });
+        }
+        
+        function handleKartTepki(event) {
+            const reactionType = event.target.dataset.reaction;
+            const kartIndex = event.target.closest('.kart-tepkiler').dataset.index;
+            empatiKartlari[kartIndex].reactions[reactionType]++;
+            // Sadece çekilen kartları yeniden render etmek daha iyi olurdu ama basitlik için tümünü render ediyorum
+            // O an görüntülenen kartların bir alt kümesini tutmak lazım bunun için.
+            // Şimdilik tüm kartları render edelim, tıklanan kartın güncel hali görünsün.
+            renderEmpatiKartlari(empatiKartlari.slice(0, Math.min(3, empatiKartlari.length))); // Ya da o an görüntülenenler
+            // Daha iyisi: sadece tıklanan butonun sayısını güncellemek
+            // event.target.textContent = `${event.target.textContent.split('(')[0]}(${empatiKartlari[kartIndex].reactions[reactionType]})`;
+        }
+
+
+        kartCekButton.addEventListener('click', () => {
+            let cekilenKartlar = [];
+            let availableCards = [...empatiKartlari]; // Kopyasını al
+            for (let i = 0; i < 3; i++) {
+                if (availableCards.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * availableCards.length);
+                cekilenKartlar.push(availableCards.splice(randomIndex, 1)[0]);
+            }
+            renderEmpatiKartlari(cekilenKartlar);
+            okunanKartSayisi += cekilenKartlar.length;
+            checkEmpatiRozeti();
+        });
+
+        yeniKartForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = document.getElementById('yeni-kart-metni').value;
+            const user = document.getElementById('yeni-kart-takma-ad').value || "Bir Dost";
+            const anonymous = document.getElementById('yeni-kart-anonim').checked;
+            if (text) {
+                empatiKartlari.push({ text, user, anonymous, reactions: { anliyorum: 0, ayni: 0, hatirla: 0 } });
+                alert('Kartınız havuza eklendi!');
+                yeniKartForm.reset();
+            }
+        });
+        
+        function checkEmpatiRozeti() {
+            const empatiRozetAlani = document.getElementById('empati-rozetleri');
+            if (okunanKartSayisi >= 5 && !document.getElementById('empati-koleksiyoncusu-rozeti')) { // 10 yerine 5 yaptım test için
+                const rozet = document.createElement('span');
+                rozet.classList.add('rozet');
+                rozet.id = 'empati-koleksiyoncusu-rozeti';
+                rozet.textContent = '🌟 Empati Koleksiyoncusu';
+                empatiRozetAlani.appendChild(rozet);
+                alert("Rozet kazandınız: Empati Koleksiyoncusu!");
+            }
+            if (rozetler.yalnizDegilim && !document.getElementById('yalniz-degilim-gorev-rozeti')) {
+                 // Bu rozet görevler sekmesinde olduğu için oraya eklenmeli
+            }
+        }
+
+
+        // ------ SEKME 3: İyileşme Alanı ------
+        const iyilesmeOnerileriDiv = document.getElementById('iyilesme-onerileri');
+        const meditasyonOnerisiP = document.getElementById('meditasyon-onerisi');
+        const egzersizGeriBildirimDiv = document.getElementById('egzersiz-sonrasi-geri-bildirim');
+
+        function updateMeditasyonOnerisi(emotion) {
+            if (!emotion) {
+                meditasyonOnerisiP.textContent = "Seçili duygunuza göre bir meditasyon önerisi için Duygu Butonları sekmesinden bir duygu seçin.";
+                iyilesmeOnerileriDiv.innerHTML = "";
+                return;
+            }
+            let onerilenMeditasyon = "";
+            switch(emotion) {
+                case "Kaygılı": onerilenMeditasyon = "Anksiyete Sakinleştirme Meditasyonu"; break;
+                case "Umutsuz": onerilenMeditasyon = "Umut Bulma Meditasyonu (Örnek)"; break;
+                case "Yalnız": onerilenMeditasyon = "Bağlantı Kurma Meditasyonu (Örnek)"; break;
+                case "İlhamlı": onerilenMeditasyon = "Yaratıcılık Akışı Meditasyonu (Örnek)"; break;
+                default: onerilenMeditasyon = "Genel Rahatlama Meditasyonu";
+            }
+            meditasyonOnerisiP.innerHTML = `Önerilen Meditasyon: <strong>${onerilenMeditasyon}</strong>. Aşağıdan başlatabilirsiniz.`;
+            iyilesmeOnerileriDiv.innerHTML = `<h4>"${emotion}" Hissine Yönelik Öneriler:</h4>
+                                           <p>Şu anda <strong>${onerilenMeditasyon}</strong> yapmanız iyi gelebilir.</p>
+                                           <p>Ayrıca, bir bardak su içmek veya kısa bir yürüyüş yapmak da yardımcı olabilir.</p>`;
+        }
+
+        function baslatEgzersiz(egzersizAdi, muzikMesaji, yonlendirmeMesaji) {
+            alert(`${egzersizAdi} başlıyor...\n${muzikMesaji}\n${yonlendirmeMesaji}\n(Bu bir simülasyondur. Gerçek sesler ve yönlendirmeler burada olurdu.)`);
+            // Simülasyon: 3 saniye sonra tamamlandı mesajı
+            setTimeout(() => {
+                egzersizGeriBildirimDiv.style.display = 'block';
+            }, 3000);
+            tamamlananMeditasyonSayisi++;
+            checkGorevRozetleri();
+        }
+
+        document.querySelectorAll('.emoji-skala button').forEach(emojiBtn => {
+            emojiBtn.addEventListener('click', () => {
+                alert(`Geri bildiriminiz alındı: ${emojiBtn.textContent}`);
+                // Burada geri bildirimi kaydetme işlemi yapılabilir.
+            });
+        });
+
+        function geriBildirimGonder() {
+             const not = document.getElementById('geri-bildirim-notu').value;
+             alert(`Notunuz "${not}" alındı. Teşekkürler!`);
+             document.getElementById('geri-bildirim-notu').value = '';
+             egzersizGeriBildirimDiv.style.display = 'none';
+        }
+
+        // ------ SEKME 4: Duygusal Görevler ------
+        const gorevlerListesi = document.getElementById('gorevler-listesi');
+        const gorevRozetleriAlani = document.getElementById('gorev-rozetleri');
+        let tamamlananOlumlamaSayisi = 0;
+        let tamamlananMeditasyonSayisi = 0; // Sekme 3'ten de artırılacak
+        
+        let rozetler = {
+            kendiDostum: false,
+            sabitZihin: false,
+            yalnizDegilim: false // Bu, empati kartlarından gelecek.
+        };
+
+        document.querySelectorAll('#gorevler-listesi input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    const gorevTipi = checkbox.dataset.gorev;
+                    if (gorevTipi === 'olumlama') tamamlananOlumlamaSayisi++;
+                    // Diğer görev tipleri için de benzer artışlar eklenebilir.
+                    // 'mesaj-gonder' gibi görevler için özel bir mantık gerekebilir (örn. bir butonla onaylatma).
+                    // 'yeni-sey-dene' için duygu sayacına bakılır.
+                    if(checkbox.id === 'gorev4') tamamlananMeditasyonSayisi++; // Bu sekmeden meditasyon tamamlanırsa
+                } else {
+                    // Eğer görev geri alınırsa sayaç azaltılabilir, opsiyonel.
+                }
+                checkGorevRozetleri();
+            });
+        });
+
+        function checkDuyguGorevi() {
+            // "Yeni bir şey dene" görevi için:
+            const yeniSeyDeneGoreviCheckbox = document.getElementById('gorev2');
+            let ayniDuygu3Gun = false;
+            for (const duygu in duyguSayaclari) {
+                if (duyguSayaclari[duygu] >= 3) { // 3 gün = 3 tıklama (basit simülasyon)
+                    ayniDuygu3Gun = true;
+                    break;
+                }
+            }
+            yeniSeyDeneGoreviCheckbox.disabled = !ayniDuygu3Gun;
+            yeniSeyDeneGoreviCheckbox.parentElement.querySelector('label').style.color = ayniDuygu3Gun ? 'inherit' : '#aaa';
+            if (!ayniDuygu3Gun) yeniSeyDeneGoreviCheckbox.checked = false; // Aktif değilse seçimi kaldır
+        }
+        
+        function checkGorevRozetleri() {
+            if (tamamlananOlumlamaSayisi >= 2 && !rozetler.kendiDostum) { // 10 yerine 2 yaptım test için
+                rozetler.kendiDostum = true;
+                gorevRozetleriAlani.innerHTML += `<span class="rozet" id="kendi-dostum-rozeti">🏅 Kendi Dostum</span>`;
+                alert("Rozet Kazandınız: Kendi Dostum!");
+            }
+            if (tamamlananMeditasyonSayisi >= 3 && !rozetler.sabitZihin) { // 7 gün yerine 3 yaptım test için
+                rozetler.sabitZihin = true;
+                gorevRozetleriAlani.innerHTML += `<span class="rozet" id="sabit-zihin-rozeti">🧠 Sabit Zihin</span>`;
+                alert("Rozet Kazandınız: Sabit Zihin!");
+            }
+             if (okunanKartSayisi >= 5 && !rozetler.yalnizDegilim) { // Bu sekme 2'deki okunanKartSayisi ile kontrol ediliyor
+                rozetler.yalnizDegilim = true; // 10 yerine 5
+                gorevRozetleriAlani.innerHTML += `<span class="rozet" id="yalniz-degilim-gorev-rozeti">🫂 Yalnız Değilim</span>`;
+                // alert("Rozet Kazandınız: Yalnız Değilim!"); // Empati kartlarında zaten uyarı veriliyor
+            }
+        }
+
+
+        // ------ SEKME 5: Dijital Terapi Defteri ------
+        const gunlukSoruP = document.getElementById('gunluk-soru');
+        const terapiDefteriForm = document.getElementById('terapi-defteri-form');
+        const gunlukYazisiTextarea = document.getElementById('gunluk-yazisi');
+        const kelimeAnaliziDiv = document.getElementById('kelime-analizi');
+        const empatiyeGonderButton = document.getElementById('empatiyeGonderButton');
+        const kayitliGunluklerDiv = document.getElementById('kayitli-gunlukler');
+
+
+        const gunlukSorulari = [
+            "Bugün seni en çok ne zorladı?",
+            "Kime ne söylemek isterdin ama söyleyemedin?",
+            "Bugün minnettar olduğun 3 şey nedir?",
+            "Şu an en çok neye ihtiyacın var?",
+            "Kendine bugün nasıl bir iyilik yaptın?"
+        ];
+
+        function yeniGunlukSoru() {
+            const randomIndex = Math.floor(Math.random() * gunlukSorulari.length);
+            gunlukSoruP.textContent = gunlukSorulari[randomIndex];
+        }
+        yeniGunlukSoru(); // Sayfa yüklendiğinde bir soru göster
+
+        terapiDefteriForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const yazi = gunlukYazisiTextarea.value;
+            if (yazi.trim() === '') {
+                alert('Lütfen bir şeyler yazın.');
+                return;
+            }
+            alert('Günlüğe kaydedildi! (Bu bir simülasyondur. Veriler saklanmıyor.)');
+            
+            // Kelime analizi (basit)
+            const kelimeler = yazi.toLowerCase().match(/\b(\w+)\b/g) || [];
+            const kelimeSayilari = {};
+            let enCokKullanilan = { kelime: '', sayi: 0 };
+            const hedefKelimeler = ["yalnızlık", "korku", "mutlu", "üzgün", "stres"]; // Analiz edilecek örnek kelimeler
+            
+            kelimeler.forEach(kelime => {
+                if (hedefKelimeler.includes(kelime)) {
+                    kelimeSayilari[kelime] = (kelimeSayilari[kelime] || 0) + 1;
+                    if (kelimeSayilari[kelime] > enCokKullanilan.sayi) {
+                        enCokKullanilan = { kelime: kelime, sayi: kelimeSayilari[kelime] };
+                    }
+                }
+            });
+
+            if (enCokKullanilan.kelime) {
+                kelimeAnaliziDiv.textContent = `Analiz: Yazınızda en sık geçen anahtar kelime "${enCokKullanilan.kelime}" (${enCokKullanilan.sayi} kez).`;
+            } else {
+                kelimeAnaliziDiv.textContent = "Yazınızda takip edilen anahtar kelimelerden bulunamadı.";
+            }
+            
+            // Örnek olarak günlüğü listeye ekle
+            const kayitDiv = document.createElement('div');
+            kayitDiv.style.border = "1px solid #eee";
+            kayitDiv.style.padding = "5px";
+            kayitDiv.style.margin = "5px 0";
+            kayitDiv.textContent = `[${new Date().toLocaleDateString()}] ${yazi.substring(0,50)}...`;
+            kayitliGunluklerDiv.appendChild(kayitDiv);
+
+
+            // gunlukYazisiTextarea.value = ''; // İsteğe bağlı: Kayıttan sonra temizle
+            yeniGunlukSoru(); // Yeni bir soru göster
+        });
+
+        empatiyeGonderButton.addEventListener('click', () => {
+            const text = gunlukYazisiTextarea.value;
+            if (text.trim()) {
+                empatiKartlari.push({ text, user: "Günlükten", anonymous: true, reactions: { anliyorum: 0, ayni: 0, hatirla: 0 } });
+                alert('Yazınız anonim olarak Empati Kartı havuzuna gönderildi!');
+            } else {
+                alert('Lütfen önce bir şeyler yazın.');
+            }
+        });
+
+        // ------ SEKME 6: Ruh Halin Ne Renk? ------
+        const ruhRenkSelect = document.getElementById('ruh-renk');
+        const ruhDokuSelect = document.getElementById('ruh-doku');
+        const ruhHareketSelect = document.getElementById('ruh-hareket');
+        const ruhPortresiDiv = document.getElementById('ruh-portresi');
+        const ruhPortresiText = document.getElementById('ruh-portresi-text');
+        const ruhPortresiAciklamaP = document.getElementById('ruh-portresi-aciklama');
+        let mevcutDokular = ['doku-duz', 'doku-dalgalı', 'doku-kirik', 'doku-bulanik'];
+        let mevcutHareketler = ['hareket-titresimli', 'hareket-yavas-donen', 'hareket-yukari-tirmanan'];
+
+
+        function updateRuhPortresi() {
+            const renk = ruhRenkSelect.value;
+            const seciliRenkOption = ruhRenkSelect.options[ruhRenkSelect.selectedIndex];
+            const textColor = seciliRenkOption.dataset.textColor || 'white';
+
+            const doku = ruhDokuSelect.value;
+            const hareket = ruhHareketSelect.value;
+
+            ruhPortresiDiv.style.backgroundColor = renk;
+            ruhPortresiText.style.color = textColor; // Yazı rengini ayarla
+
+            // Önceki doku ve hareket sınıflarını temizle
+            mevcutDokular.forEach(d => ruhPortresiDiv.classList.remove(d));
+            mevcutHareketler.forEach(h => ruhPortresiDiv.classList.remove(h));
+            ruhPortresiDiv.style.filter = ''; // Bulanıklığı sıfırla
+
+            if (doku) {
+                if (doku === 'doku-bulanik') {
+                    ruhPortresiDiv.style.filter = 'blur(2px)'; // Sadece portreye bulanıklık
+                } else {
+                    ruhPortresiDiv.classList.add(doku);
+                }
+            }
+            if (hareket) ruhPortresiDiv.classList.add(hareket);
+
+            // Açıklamayı güncelle
+            let aciklama = `Bugün içim ${seciliRenkOption.text.split('(')[0].trim()} renkteydi`;
+            if (doku !== 'doku-duz') aciklama += `, ${ruhDokuSelect.options[ruhDokuSelect.selectedIndex].text.toLowerCase()} bir dokuda`;
+            if (hareket) aciklama += ` ve ${ruhHareketSelect.options[ruhHareketSelect.selectedIndex].text.toLowerCase()}`;
+            aciklama += ".";
+            ruhPortresiAciklamaP.textContent = aciklama;
+        }
+
+        ruhRenkSelect.addEventListener('change', updateRuhPortresi);
+        ruhDokuSelect.addEventListener('change', updateRuhPortresi);
+        ruhHareketSelect.addEventListener('change', updateRuhPortresi);
+
+        // Başlangıçta bir kez çalıştır
+        updateRuhPortresi();
+
+
+        // ------ PAYLAŞIM FONKSİYONLARI (Basit) ------
+        function paylasEkranGoruntusu(elementId, mesaj) {
+            // Gerçek ekran görüntüsü almak yerine metin kopyalama simülasyonu
+            const contentElement = document.getElementById(elementId);
+            let textToShare = mesaj + "\n";
+            if(elementId === 'empati-kartlari-alani'){
+                contentElement.querySelectorAll('.empati-kart p').forEach(p => {
+                    textToShare += `- "${p.textContent}"\n`;
+                });
+            }
+            
+            try {
+                navigator.clipboard.writeText(textToShare);
+                alert("İçerik panoya kopyalandı! Sosyal medyada paylaşabilirsiniz.\n\n" + textToShare.substring(0,150) + "...");
+            } catch (err) {
+                alert("Paylaşım için içerik:\n" + textToShare.substring(0,150) + "...");
+                console.error('Kopyalama başarısız: ', err);
+            }
+        }
+        
+        function paylasRuhPortresi() {
+            const aciklama = ruhPortresiAciklamaP.textContent;
+            const renk = ruhRenkSelect.options[ruhRenkSelect.selectedIndex].text.split('(')[0].trim();
+            const doku = ruhDokuSelect.options[ruhDokuSelect.selectedIndex].text;
+            const hareket = ruhHareketSelect.options[ruhHareketSelect.selectedIndex].text;
+
+            const shareText = `${aciklama}\n#RuhHalim #DuyguPortrem #Renkler #Duygular\n(Renk: ${renk}, Doku: ${doku}, Hareket: ${hareket})`;
+             try {
+                navigator.clipboard.writeText(shareText);
+                alert("Ruh portresi açıklaması panoya kopyalandı! Sosyal medyada paylaşabilirsiniz:\n\n" + shareText);
+            } catch (err) {
+                alert("Paylaşım için içerik:\n" + shareText);
+                console.error('Kopyalama başarısız: ', err);
+            }
+        }
+
+        // İlk sekme aktif olsun ve başlangıç işlemleri
+        document.addEventListener('DOMContentLoaded', () => {
+            tabs[0].click(); // İlk sekmeyi aktif et
+            checkDuyguGorevi(); // "Yeni bir şey dene" görevini başlangıçta kontrol et
+            updateMeditasyonOnerisi(null); // Başlangıçta öneri yok
+            checkGorevRozetleri(); // Rozetleri kontrol et
+            checkEmpatiRozeti(); // Empati rozetini kontrol et
+        });
+
+    </script>
+</body>
+</html>
